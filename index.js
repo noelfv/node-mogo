@@ -1,5 +1,6 @@
 const MongoClient=require('mongodb').MongoClient;
 const assert=require('assert');
+const dboper=require('./operations');
 
 
 MongoClient.connect('mongodb://localhost:27017/',(err,client)=>{
@@ -11,24 +12,29 @@ console.log('Conectado correctamente');
 const db=client.db("conFusion");
 const collection =db.collection('dishes');
 
-collection.insertOne({"name":"UthaPizza","description":"test"},(err,result)=>{
+dboper.insertDocument(db,{name:"Vadonut",description:"Test"},'dishes',(result)=>{
 
-    assert.equal(err,null);
-    console.log('Despues de insertar:\n');
-    console.log(result.ops);
+    console.log("Insertando documento : \n"+  result.ops);
 
-    collection.find({}).toArray((err,docs)=>{
-        assert.equal(err,null);
-        console.log('Encontrado:\n');
-        console.log(docs);
+    dboper.findDocument(db,'dishes',(docs)=>{
+        console.log("Documento encontrado: \n"+  docs);
 
-        db.dropCollection('dishes',(err,result)=>{
-            assert.equal(err,null);
-            client.close();
-            
+        dboper.updateDocument(db,{name:"Vadonut"},{description:"Update test"},'dishes',(result)=>{
+
+             console.log("Actualizando documento : \n"+  result.result);
+    
+             dboper.findDocument(db,'dishes',(docs)=>{
+                console.log("Documento encontrado: \n"+  docs);
+                db.dropCollection('dishes',(result)=>{
+                    console.log("Eliminando collection: "+  result); 
+
+                    client.close();
+                });
+             });
         });
+
     });
-});
+}) ;
 
 
 });
